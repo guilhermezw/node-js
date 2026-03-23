@@ -8,7 +8,7 @@ const sequelize = new Sequelize('db_projeto' , 'root' , '' ,{
     dialect: 'mysql'
 })
 
-//Criação do modelo do Usuário
+// Definição de tabelas (modelo) do Usuário
 const Usuario = sequelize.define('Usuario' , {
     id:{
         type: DataTypes.INTEGER,
@@ -58,6 +58,46 @@ app.post('/usuarios' , async(request , response) => {
         response.status(400).json({
             erro: 'Erro ao cadastrar Usuário.'
         })
+    }
+})
+
+app.put("/usuarios/:id" , async (request , response) => {
+    try{
+        const {id} = request.params
+        const {nome , email , telefone} = request.body
+
+        const[updated] = await Usuario.update(
+            {nome , email , telefone},
+            {where: {id: id}}
+        )
+
+        if(updated){
+            const usuarioAtualizado = await Usuario.findByPk(id)
+            return response.status(200).json({
+                mensage: "Usuário atualizado com sucesso.",
+                usuario: usuarioAtualizado
+            })
+        }
+
+        return response.status(404).json({erro: "Usuário não encontrado."})
+
+    } catch (error){
+        response.status(500).json({erro: "Erro ao atualizar usuário."})
+    }
+})
+
+app.delete("/usuarios/:id" , async (request , response) => {
+    try{
+        const {id} = request.params
+        const deleted = await Usuario.destroy( {where: {id: id}})
+
+        if(deleted){
+            return response.status(200).json({message: "Usuário deletado"})
+        }
+
+        return response.status(404).json({message: "Usuário não encontrado"})
+    } catch(error){
+        response.status(500).json({erro: "Erro ao deletar usuário."})
     }
 })
 
